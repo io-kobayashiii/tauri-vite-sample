@@ -43,7 +43,13 @@ jobs:
 
       - name: get version from package.json
         id: vars
-        run: echo "VERSION=$(jq -r .version < package.json)" >> $GITHUB_ENV
+        run: |
+          if [ ${{ matrix.platform }} = 'windows-latest' ]; then
+            $VERSION = (Get-Content package.json | ConvertFrom-Json).version
+            echo "VERSION=$VERSION" >> $env:GITHUB_ENV
+          else
+            echo "VERSION=$(jq -r .version < package.json)" >> $GITHUB_ENV
+          fi
 
       - name: build Tauri app
         run: yarn tauri build ${{ matrix.args }}
