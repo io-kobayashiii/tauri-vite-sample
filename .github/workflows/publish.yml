@@ -58,7 +58,8 @@ jobs:
       - name: check build artifacts
         run: |
           echo "Checking build artifacts in path: ${{ matrix.artifact_path }}"
-          ls -al ${{ matrix.artifact_path }}
+          ls -al src-tauri/target/release/bundle/macos
+          ls -al src-tauri/target/release/bundle/msi
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
@@ -66,57 +67,57 @@ jobs:
           name: app-${{ matrix.platform }}-${{ matrix.args }}
           path: ${{ matrix.artifact_path }}
 
-  release:
-    needs: build-tauri
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout repository
-        uses: actions/checkout@v4
+  # release:
+  #   needs: build-tauri
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+  #     - name: setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
 
-      - name: get version from package.json
-        id: vars
-        run: |
-          VERSION=$(jq -r .version < package.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+  #     - name: get version from package.json
+  #       id: vars
+  #       run: |
+  #         VERSION=$(jq -r .version < package.json)
+  #         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: ./artifacts
+  #     - name: download artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         path: ./artifacts
 
-      - name: create GitHub release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: app-v${{ env.VERSION }}
-          release_name: 'App v${{ env.VERSION }}'
-          body: 'See the assets to download this version and install.'
-          draft: false
-          prerelease: false
+  #     - name: create GitHub release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: app-v${{ env.VERSION }}
+  #         release_name: 'App v${{ env.VERSION }}'
+  #         body: 'See the assets to download this version and install.'
+  #         draft: false
+  #         prerelease: false
 
-      - name: upload Windows release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/**/*.msi
-          asset_name: app-v${{ env.VERSION }}-win.msi
-          asset_content_type: application/octet-stream
+  #     - name: upload Windows release asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: artifacts/**/*.msi
+  #         asset_name: app-v${{ env.VERSION }}-win.msi
+  #         asset_content_type: application/octet-stream
 
-      - name: upload macOS release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/**/*.app
-          asset_name: app-v${{ env.VERSION }}-macos.app
-          asset_content_type: application/octet-stream
+  #     - name: upload macOS release asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: artifacts/**/*.app
+  #         asset_name: app-v${{ env.VERSION }}-macos.app
+  #         asset_content_type: application/octet-stream
