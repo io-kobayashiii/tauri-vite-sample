@@ -55,6 +55,11 @@ jobs:
       - name: build Tauri app
         run: yarn tauri build ${{ matrix.args }}
 
+      - name: check build artifacts
+        run: |
+          echo "Checking build artifacts in path: ${{ matrix.artifact_path }}"
+          ls -al ${{ matrix.artifact_path }}
+
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
