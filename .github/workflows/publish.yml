@@ -45,7 +45,7 @@ jobs:
         id: vars
         run: |
           if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "VERSION=$(powershell -Command \"(Get-Content package.json | ConvertFrom-Json).version\")" >> $env:GITHUB_ENV
+            pwsh -command '$version = (Get-Content package.json | ConvertFrom-Json).version; echo "VERSION=$version" >> $env:GITHUB_ENV'
           else
             VERSION=$(jq -r .version < package.json)
             echo "VERSION=$VERSION" >> $GITHUB_ENV
