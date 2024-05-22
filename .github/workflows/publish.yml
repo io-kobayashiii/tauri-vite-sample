@@ -52,17 +52,6 @@ jobs:
       - name: install frontend dependencies
         run: yarn
 
-      - name: get version from package.json
-        id: vars
-        run: |
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            pwsh -command '$version = (Get-Content package.json | ConvertFrom-Json).version; echo "VERSION=$version" >> $env:GITHUB_ENV'
-          else
-            VERSION=$(jq -r .version < package.json)
-            echo "VERSION=$VERSION" >> $GITHUB_ENV
-          fi
-        shell: bash
-
       - name: build Tauri app
         run: yarn tauri build ${{ matrix.args }}
 
@@ -76,6 +65,20 @@ jobs:
     needs: build-tauri
     runs-on: ubuntu-latest
     steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: get version from package.json
+        id: vars
+        run: |
+          VERSION=$(jq -r .version < package.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: download artifacts
         uses: actions/download-artifact@v3
         with:
