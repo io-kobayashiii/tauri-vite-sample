@@ -16,10 +16,13 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
+            artifact_path: 'src-tauri/target/release/bundle/macos/*.app'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
+            artifact_path: 'src-tauri/target/release/bundle/macos/*.app'
           - platform: 'windows-latest'
             args: '--target x86_64-pc-windows-msvc'
+            artifact_path: 'src-tauri/target/release/bundle/msi/*.msi'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -28,7 +31,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '20'
           cache: 'yarn'
 
       - name: install Rust stable
@@ -37,9 +40,14 @@ jobs:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: actions/cache@v3
         with:
-          workspaces: './src-tauri -> target'
+          path: |
+            ~/.cargo
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: install frontend dependencies
         run: yarn
@@ -62,9 +70,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-${{ matrix.platform }}-${{ matrix.args }}
-          path: |
-            src-tauri/target/release/bundle/macos/*.app
-            src-tauri/target/release/bundle/msi/*.exe
+          path: ${{ matrix.artifact_path }}
 
   release:
     needs: build-tauri
@@ -93,8 +99,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/**/*.exe
-          asset_name: app-v${{ env.VERSION }}-win.exe
+          asset_path: artifacts/**/*.msi
+          asset_name: app-v${{ env.VERSION }}-win.msi
           asset_content_type: application/octet-stream
 
       - name: upload macOS release asset
