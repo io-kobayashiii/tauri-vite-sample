@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "tauri-vite-sample",
-    "version": "0.0.2"
+    "version": "0.0.3"
   },
   "build": {
     "beforeDevCommand": "yarn dev",
@@ -33,7 +33,7 @@
       ],
       "windows": {
         "webviewInstallMode": {
-          "type": "embedBootstrapper"
+          "type": "skip"
         }
       }
     }
