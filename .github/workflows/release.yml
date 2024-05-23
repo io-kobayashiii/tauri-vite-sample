@@ -18,7 +18,9 @@ jobs:
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
           - platform: 'windows-latest'
-            args: ''
+            args: '--target x86_64-pc-windows-msvc'
+          - platform: 'ubuntu-latest'
+            args: '--target x86_64-unknown-linux-gnu'
 
     runs-on: ${{ matrix.settings.platform }}
     steps:
@@ -33,7 +35,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.settings.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.settings.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.settings.platform == 'windows-latest' && 'x86_64-pc-windows-msvc' || matrix.settings.platform == 'ubuntu-latest' && 'x86_64-unknown-linux-gnu' }}
 
       - name: rust cache
         uses: swatinem/rust-cache@v2
@@ -49,7 +51,7 @@ jobs:
         with:
           tagName: app-v__VERSION__
           releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseBody: 'See the assets to download this version.'
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.settings.args }}
